@@ -1,0 +1,33 @@
+---
+- name: call API from Satellite
+  hosts: localhost
+  gather_facts: no
+  vars:
+    satelliteurl: satellite.ravi.local
+    client: dn1.ravi.local
+
+  tasks:
+    - name: get modules for given host from satellite 
+      uri:
+        url: https://{{ satelliteurl }}/api/v2/hosts/{{ client }}
+        method: GET 
+        return_content: yes
+        body_format: json
+        user: admin
+        password: redhat
+        force_basic_auth: yes 
+        validate_certs: no
+      register: restdata
+    - name: output rest data
+      debug: 
+        msg: "{{ restdata.json }}" 
+        #msg: "{{ restdata }}" 
+    
+    - local_action: 
+        module: copy 
+        content: "{{ restdata.json }}"
+        dest: /home/ansible/ansible/local_act1.out
+##    - local_action:
+#        module: shell 'chown ansible.ansible /home/ansible/ansible/local_act1.out'
+        
+

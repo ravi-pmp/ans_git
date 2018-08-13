@@ -1,0 +1,25 @@
+---
+- name: call API from Satellite
+  hosts: all
+  gather_facts: no
+  vars:
+    satelliteurl: satellite.ravi.local
+    client: nn1.ravi.local
+
+  tasks:
+    - name: pgsql command
+      shell: "/root/postgre.sh"
+      become: True
+      register: restdata
+
+
+    - local_action:
+        module: lineinfile 
+        line: "{{ item }}"
+        state: present
+        backup: True
+        create: True
+        dest: /tmp/test.out
+      with_items : "{{restdata.stdout_lines}}"
+
+

@@ -1,0 +1,19 @@
+---
+- name: compare variable
+  hosts: localhost
+  #gather_facts: True
+  tasks: 
+    - name: get var date
+      command: 'date +%Y-%m-%d'
+      register: var1
+
+    - name: get var date again
+      command: 'date +%Y-%m-%d'
+      register: var2
+     
+    - name: echo value 
+      debug: 
+        msg: "{{ var1.stdout}}"
+      when:   var1.stdout  == var2.stdout
+
+

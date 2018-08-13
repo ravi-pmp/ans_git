@@ -1,0 +1,77 @@
+---
+- name: Create Ansible User with rights
+  hosts: all
+  become: true
+  tasks:
+    - name: Create Ansible user
+      user:
+        name: ansible
+        comment: "User for Ansible Tower access"
+        shell: /bin/bash
+        system: yes
+
+    - name: set Ansible user never expired
+      command: chage -I -1 -m 0 -M -1 -E -1 
+
+    - name: Create devops file
+      file:
+        path: /etc/sudoers.d/devops
+        state: touch
+        mode: 0644
+      when:
+        - ansible_distribution == "RedHat"
+        - ansible_distribution_major_version > "5"
+
+    - name: Create content in sudo file
+      lineinfile:
+        path: /etc/sudoers.d/devops
+        line: 'ansible        ALL=(ALL)       NOPASSWD:ALL'
+      when:
+        - ansible_distribution == "RedHat"
+        - ansible_distribution_major_version > "5"
+
+    - name: Change devops file permission (RHEL6)
+      file:
+        path: /etc/sudoers.d/devops
+        mode: 0440
+      when:
+        - ansible_distribution == "RedHat"
+        - ansible_distribution_major_version == "6"
+
+    - name: Create content in sudo file (RHEL 5)
+      lineinfile:
+        path: /etc/sudoers
+        line: 'ansible        ALL=(ALL)       NOPASSWD:ALL'
+      when:
+        - ansible_distribution == "RedHat"
+        - ansible_distribution_major_version == "5"
+
+    - name: Create content in sudo file (RHEL6 and RHEL7)
+      lineinfile:
+        path: /etc/sudoers
+        line: '#includedir /etc/sudoers.d'
+      when:
+        - ansible_distribution == "RedHat"
+        - ansible_distribution_major_version >= "6"
+
+    - name: Create .ssh directory
+      file:
+        path: /home/ansible/.ssh
+        state: directory
+        owner: ansible
+        group: ansible
+        mode: 0700
+
+    - name: Create key file
+      file:
+        path: /home/ansible/.ssh/authorized_keys
+        state: touch
+        mode: 0600
+        owner: ansible
+        group: ansible
+
+    - name: Create content in sudo file
+      lineinfile:
+        path: /home/ansible/.ssh/authorized_keys
+        line: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCkhFtjWd+flw9sIzVujSU3l93yh8vMIj7a0v7c17iAkK4RtopR8tlGnT6K4jLUbKmUB3t5wfvObosIcJ9l1ZyKv8OH8lv/NgynPdOaw8JqSPhUdONKLuOIn15tZBhQPTYPILOwTWPu3n2BFNj0EbdZi2S3sAJQgH/EkJswGB4lSpywIs+r6WXvDjq4RJGy14qLl6H6vszfoZtL6lw7siDc1Q2s4voXEk2juMQN/bmmkZfYsaAv1tyr334GmOCwckAlOxbqeEtgA1sjApFbl2NnFjl8i0kiEUWLFzEorIPO+0NG/DPD5oE1SEakBzBHVIEGSC1kYKnLk/45Ac8E0us5 ansible@ansprdappls001.app.vic'
+

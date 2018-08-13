@@ -1,0 +1,18 @@
+---
+- name: call API from Satellite
+  hosts: all
+  gather_facts: no
+  vars:
+    satelliteurl: satellite.ravi.local
+    client: dn1.ravi.local
+
+  tasks:
+    - command: "hammer -u admin -p redhat csv content-hosts --export  --itemized-subscriptions --verbose --organization 'Default Organization'" 
+      register: hammer_out
+        
+    - debug: msg="{{ hammer_out.stdout_lines }}"
+
+    - local_action:
+        module: copy
+        content: "{{ hammer_out.stdout_lines }}"
+        dest: /tmp/test.out

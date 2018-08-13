@@ -1,0 +1,20 @@
+---
+- name: ip
+  hosts: all
+  become: True
+  tasks:
+    - name: install NetworkManager-glib
+      yum:
+        name: NetworkManager-glib
+        state: latest
+    - name: change ip 
+      nmcli:
+        conn_name: "System eth0"
+        ifname: eth0
+        type: ethernet
+        ip4: 172.16.4.161/24
+        gw4: 172.16.4.2
+        state: present
+        autoconnect: yes
+        dns4: 172.16.4.2
+        method: manual

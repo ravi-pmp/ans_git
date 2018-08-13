@@ -1,0 +1,28 @@
+---
+- name: get facts and ansible cmdb
+  hosts: localhost
+  tasks:
+    - name: remove folder structure 
+      file: 
+        path: "/home/ansible/ansible/{{ item }}"
+        state: absent 
+      with_items:
+        - facts_output
+        - cmdb_output 
+      tags: remove 
+    - name: create folder structure 
+      file: 
+        path: "/home/ansible/ansible/{{ item }}"
+        state: directory 
+      with_items:
+        - facts_output
+        - cmdb_output 
+      tags: add 
+      
+    - name: get facts 
+      shell: 'ansible all -i /tmp/test.out  -m setup --tree /home/ansible/ansible/facts_output'
+      tags: get_facts
+
+    - name: run cmdb
+      shell: 'ansible-cmdb -i /tmp/test.out /home/ansible/ansible/facts_output/  > /home/ansible/ansible/cmdb_output/hosts_singtel.html'
+      tags: get_cmdb
